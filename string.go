@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"math/rand"
 	"reflect"
+
+	"regexp"
+
 	"strings"
 	"time"
 )
@@ -64,6 +67,12 @@ func StringRandSeq(n int) string {
 // StringRandSeq16 创建长度为16的随机字符串
 func StringRandSeq16() string {
 	return StringRandSeq(16)
+}
+
+// StringAllLetter 判断字符串是否只由字母组成
+// str 为待判断的字符串
+func StringIsLetter(str string) (bool, error) {
+	return regexp.MatchString(`^[A-Za-z]+$`, str)
 }
 
 // StringTrim 去除字符串中的空格和换行符
