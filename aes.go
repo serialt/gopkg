@@ -5,12 +5,14 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"encoding/base64"
+	"errors"
 	"io"
 )
 
 // AESCommon AES工具
 //
-// 对称加密的四种模式(ECB、CBC、CFB、OFB)
+// 对称加密的四种模式(ECB、CBC、CFB、OFB、GCM)
 //
 // ECB模式——电码本模式（Electronic Codebook Book (ECB)）
 //
@@ -41,6 +43,16 @@ import (
 // 优点:1.隐藏了明文模式;2.分组密码转化为流模式;3.可以及时加密传送小于分组的数据;
 //
 // 缺点:1.不利于并行计算;2.对明文的主动攻击是可能的;3.误差传送：一个明文单元损坏影响多个单元;
+//
+// ======================================
+// GCM加密
+//
+// GCM中的G就是指GMAC，C就是指CTR。
+// GCM可以提供对消息的加密和完整性校验，另外，它还可以提供附加消息的完整性校验。在实际应用场景中，
+// 有些信息是我们不需要保密，但信息的接收者需要确认它的真实性的，例如源IP，源端口，目的IP，IV，
+// 等等。因此，我们可以将这一部分作为附加消息加入到MAC值的计算当中。下图的Ek表示用对称秘钥k对输入
+// 做AES运算。最后，密文接收者会收到密文、IV（计数器CTR的初始值）
+//
 
 //--------------------------------------------------------------------------------------------------------------------
 
@@ -195,4 +207,109 @@ func AESDecryptOFB(encrypted []byte, key []byte) (decrypted []byte) {
 	stream := cipher.NewOFB(block, iv)
 	stream.XORKeyStream(encrypted, encrypted)
 	return encrypted
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+
+// AssertKey  判断AES密钥长度是否合法,密钥长度16/24/32字节
+func AssertKey(key []byte) {
+	keyLen := len(key)
+	if keyLen != 16 && keyLen != 24 && keyLen != 32 {
+		panic("key length must be 16/24/32 bytes")
+	}
+}
+
+// AssertIV 判断AES向量长度是否合法
+func AssertIV(iv []byte) {
+	keyLen := len(iv)
+	if keyLen < 16 {
+		panic("iv length must >= 16 bytes")
+	}
+}
+
+// AESDecryptOFB AES OFB模式解密
+
+// encodeBase64 base64编码
+func encodeBase64(src []byte) string {
+	return base64.StdEncoding.EncodeToString(src)
+}
+
+// decodeBase64 base64解码
+func decodeBase64(src string) ([]byte, error) {
+	return base64.StdEncoding.DecodeString(src)
+}
+
+// AESEncryptGCM AES GCM模式加密
+func AESEncryptGCM(plainText []byte, cipherKey string) (result []byte, err error) {
+	var (
+		aesBlock cipher.Block
+		gcm      cipher.AEAD
+	)
+	aesBlock, err = aes.NewCipher([]byte(cipherKey))
+	if err != nil {
+		return
+	}
+	gcm, err = cipher.NewGCM(aesBlock)
+	if err != nil {
+		return
+	}
+
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
+		return
+	}
+	result = gcm.Seal(nonce, nonce, plainText, nil)
+	return
+}
+
+// AESDecryptGCM AESDecryptGCM AESDecryptGCM模式解密
+func AESDecryptGCM(encryptText []byte, cipherKey string) (result []byte, err error) {
+	var (
+		aesBlock cipher.Block
+		gcm      cipher.AEAD
+	)
+	aesBlock, err = aes.NewCipher([]byte(cipherKey))
+	if err != nil {
+		return
+	}
+	gcm, err = cipher.NewGCM(aesBlock)
+	if err != nil {
+		return
+	}
+	nonceSize := gcm.NonceSize()
+	if len(encryptText) < nonceSize {
+		err = errors.New("cipher: incorrect size given to GCM")
+		return
+	}
+	nonce, cipherText := encryptText[:nonceSize], encryptText[nonceSize:]
+	return gcm.Open(nil, nonce, cipherText, nil)
+}
+
+// Encrypt gcm-aes base64加密字符串 秘钥长度为16/24/32位
+func AESEncryptGCMBase64String(src, cipherKey string) (dst string, err error) {
+	var encryptResult []byte
+	encryptResult, err = AESEncryptGCM([]byte(src), cipherKey)
+	if err != nil {
+		return
+	}
+	dst = encodeBase64(encryptResult)
+	return
+}
+
+// Decrypt gcm-aes base64解密为字符串 秘钥长度为16/24/32位
+func AESDecryptGCMBase64String(src string, cipherKey string) (dst string, err error) {
+	var (
+		encryptResult []byte
+		decryptResult []byte
+	)
+	encryptResult, err = decodeBase64(src)
+	if err != nil {
+		return
+	}
+	decryptResult, err = AESDecryptGCM(encryptResult, cipherKey)
+	if err != nil {
+		return
+	}
+	dst = string(decryptResult)
+	return
 }

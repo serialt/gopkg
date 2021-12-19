@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -161,4 +162,50 @@ func String2Timestamp(date, format string, zone *time.Location) (int64, error) {
 		return 0, err
 	}
 	return theTime.Unix(), nil
+}
+
+// FilterPrefix 根据前缀过滤slice
+func FilterPrefix(strs []string, s string) (r []string) {
+	for _, v := range strs {
+		if len(v) >= len(s) {
+			if v[:len(s)] == s {
+				r = append(r, v)
+			}
+		}
+	}
+
+	return r
+}
+
+// FindLongestStr 查询最长字符串
+func FindLongestStr(strs []string) string {
+	longestStr := ""
+	for _, str := range strs {
+		if len(str) >= len(longestStr) {
+			longestStr = str
+		}
+	}
+
+	return longestStr
+}
+
+// ArrayToString 数字切片变字符串
+func ArrayToString(array []interface{}) string {
+	return strings.Replace(strings.Trim(fmt.Sprint(array), "[]"), " ", ",", -1)
+}
+
+// StructToMap 结构体转map
+func StructToMap(obj interface{}) map[string]interface{} {
+	obj1 := reflect.TypeOf(obj)
+	obj2 := reflect.ValueOf(obj)
+
+	var data = make(map[string]interface{})
+	for i := 0; i < obj1.NumField(); i++ {
+		if obj1.Field(i).Tag.Get("mapstructure") != "" {
+			data[obj1.Field(i).Tag.Get("mapstructure")] = obj2.Field(i).Interface()
+		} else {
+			data[obj1.Field(i).Name] = obj2.Field(i).Interface()
+		}
+	}
+	return data
 }
