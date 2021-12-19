@@ -53,10 +53,8 @@ func IsDirExists(path string) bool {
 // CreateDir 创建目录
 func CreateDir(dirs ...string) (err error) {
 	for _, v := range dirs {
-		exist, err := PathExists(v)
-		if err != nil {
-			return err
-		}
+		exist := IsDirExists(v)
+
 		if !exist {
 
 			if err := os.MkdirAll(v, os.ModePerm); err != nil {
