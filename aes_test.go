@@ -1,3 +1,21 @@
+// ***********************************************************************
+// Description   : IMAU of Serialt
+// Version       : 1.0
+// Author        : serialt
+// Email         : serialt@qq.com
+// Github        : https://github.com/serialt
+// Created Time  : 2021-12-19 14:13:05
+// Last modified : 2021-12-19 14:37:25
+// FilePath      : \gopkg\aes_test.go
+// Other         :
+//               :
+//
+//
+//                 人和代码，有一个能跑就行
+//
+//
+// ***********************************************************************
+
 package gopkg
 
 import (
@@ -37,5 +55,12 @@ func TestCryptoAES(t *testing.T) {
 	t.Log("密文(hex)：", hex.EncodeToString(encrypted))
 	t.Log("密文(base64)：", base64.StdEncoding.EncodeToString(encrypted))
 	decrypted = AESDecryptOFB(encrypted, key)
+	t.Log("解密结果：", string(decrypted))
+
+	t.Log("------------------ GCM模式 --------------------")
+	encrypted = AESEncryptGCM(data, key)
+	t.Log("密文(hex)：", hex.EncodeToString(encrypted))
+	t.Log("密文(base64)：", base64.StdEncoding.EncodeToString(encrypted))
+	decrypted = AESDecryptGCM(encrypted, key)
 	t.Log("解密结果：", string(decrypted))
 }
