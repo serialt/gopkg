@@ -227,8 +227,6 @@ func AssertIV(iv []byte) {
 	}
 }
 
-// AESDecryptOFB AES OFB模式解密
-
 // encodeBase64 base64编码
 func encodeBase64(src []byte) string {
 	return base64.StdEncoding.EncodeToString(src)
@@ -240,12 +238,12 @@ func decodeBase64(src string) ([]byte, error) {
 }
 
 // AESEncryptGCM AES GCM模式加密
-func AESEncryptGCM(plainText []byte, cipherKey string) (result []byte, err error) {
+func AESEncryptGCM(plainText []byte, cipherKey []byte) (result []byte, err error) {
 	var (
 		aesBlock cipher.Block
 		gcm      cipher.AEAD
 	)
-	aesBlock, err = aes.NewCipher([]byte(cipherKey))
+	aesBlock, err = aes.NewCipher(cipherKey)
 	if err != nil {
 		return
 	}
@@ -263,7 +261,7 @@ func AESEncryptGCM(plainText []byte, cipherKey string) (result []byte, err error
 }
 
 // AESDecryptGCM AESDecryptGCM AESDecryptGCM模式解密
-func AESDecryptGCM(encryptText []byte, cipherKey string) (result []byte, err error) {
+func AESDecryptGCM(encryptText []byte, cipherKey []byte) (result []byte, err error) {
 	var (
 		aesBlock cipher.Block
 		gcm      cipher.AEAD
@@ -288,7 +286,7 @@ func AESDecryptGCM(encryptText []byte, cipherKey string) (result []byte, err err
 // Encrypt gcm-aes base64加密字符串 秘钥长度为16/24/32位
 func AESEncryptGCMBase64String(src, cipherKey string) (dst string, err error) {
 	var encryptResult []byte
-	encryptResult, err = AESEncryptGCM([]byte(src), cipherKey)
+	encryptResult, err = AESEncryptGCM([]byte(src), []byte(cipherKey))
 	if err != nil {
 		return
 	}
@@ -306,7 +304,7 @@ func AESDecryptGCMBase64String(src string, cipherKey string) (dst string, err er
 	if err != nil {
 		return
 	}
-	decryptResult, err = AESDecryptGCM(encryptResult, cipherKey)
+	decryptResult, err = AESDecryptGCM(encryptResult, []byte(cipherKey))
 	if err != nil {
 		return
 	}

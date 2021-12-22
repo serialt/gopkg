@@ -1,7 +1,7 @@
 package gopkg
 
 // Does slice contain string
-func contains(slice []string, value string) bool {
+func Contains(slice []string, value string) bool {
 	for _, item := range slice {
 		if item == value {
 			return true
@@ -21,26 +21,26 @@ func IndexSlice(slice []string, value string) (int, bool) {
 }
 
 // Is a sub-slice of slice
-func subslice(sub, main []string) bool {
+func Subslice(sub, main []string) bool {
 	if len(sub) > len(main) {
 		return false
 	}
 	for _, s := range sub {
-		if !contains(main, s) {
+		if !Contains(main, s) {
 			return false
 		}
 	}
 	return true
 }
 
-// diffSlice sub 是否在main里，返回diff和bool
-func diffSlice(sub, main []string) ([]string, bool) {
+// DiffSlice sub 是否在main里,放回sub里不在main里的元素，返回diff和bool
+func DiffSlice(sub, main []string) ([]string, bool) {
 	var diff []string
 	if len(sub) > len(main) {
 		return diff, false
 	}
 	for _, s := range sub {
-		if !contains(main, s) {
+		if !Contains(main, s) {
 			diff = append(diff, s)
 		}
 	}

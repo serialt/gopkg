@@ -187,24 +187,24 @@ func TestFileCommon_Copy(t *testing.T) {
 }
 
 func TestFileCompress(t *testing.T) {
-	f, err := os.Open("./example/ca")
+	f, err := os.Open("./tmp/copy")
 	assert.NilError(t, err)
-	err = FileCompressZip([]*os.File{f}, "./example/cas.zip")
+	err = FileCompressZip([]*os.File{f}, "./tmp/copy.zip")
 	assert.NilError(t, err)
 }
 
 func TestFileCompressTar(t *testing.T) {
-	f, err := os.Open("./example/ca")
+	f, err := os.Open("./tmp/copy")
 	assert.NilError(t, err)
-	err = FileCompressTar([]*os.File{f}, "./example/cas.tar")
+	err = FileCompressTar([]*os.File{f}, "./tmp/copy.tar")
 	assert.NilError(t, err)
 	//err = FileDeCompressTar("./example/cas.tar", "./example/castar")
 	//assert.NilError(t, err)
 }
 
 func TestFileDeCompressZip(t *testing.T) {
-	err := FileDeCompressZip("./example/ca_grope_sql.zip", "./example/ca_grope_sql_de")
+	err := FileDeCompressZip("./tmp/copy.zip", "./tmp/log/")
 	assert.NilError(t, err)
-	err = FileDeCompressZip("./example/sql.zip", "./example/sql_de")
-	assert.NilError(t, err)
+	// err = FileDeCompressZip("./example/sql.zip", "./example/sql_de")
+	// assert.NilError(t, err)
 }
