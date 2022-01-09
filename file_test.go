@@ -2,9 +2,10 @@ package gopkg
 
 import (
 	"os"
+	"runtime"
 	"testing"
 
-	"gotest.tools/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFileCommon_PathExists(t *testing.T) {
@@ -188,23 +189,124 @@ func TestFileCommon_Copy(t *testing.T) {
 
 func TestFileCompress(t *testing.T) {
 	f, err := os.Open("./tmp/copy")
-	assert.NilError(t, err)
+	assert.Nil(t, err)
 	err = FileCompressZip([]*os.File{f}, "./tmp/copy.zip")
-	assert.NilError(t, err)
+	assert.Nil(t, err)
 }
 
 func TestFileCompressTar(t *testing.T) {
 	f, err := os.Open("./tmp/copy")
-	assert.NilError(t, err)
+	assert.Nil(t, err)
 	err = FileCompressTar([]*os.File{f}, "./tmp/copy.tar")
-	assert.NilError(t, err)
+	assert.Nil(t, err)
 	//err = FileDeCompressTar("./example/cas.tar", "./example/castar")
-	//assert.NilError(t, err)
+	//assert.Nil(t, err)
 }
 
 func TestFileDeCompressZip(t *testing.T) {
 	err := FileDeCompressZip("./tmp/copy.zip", "./tmp/log/")
-	assert.NilError(t, err)
+	assert.Nil(t, err)
 	// err = FileDeCompressZip("./example/sql.zip", "./example/sql_de")
-	// assert.NilError(t, err)
+	// assert.Nil(t, err)
+}
+
+func TestCommon(t *testing.T) {
+	assert.Equal(t, "", FileExt("testdata/testjpg"))
+	assert.Equal(t, ".jpg", Suffix("testdata/test.jpg"))
+
+	// IsZipFile
+	assert.False(t, IsZipFile("testdata/test.jpg"))
+
+	assert.Equal(t, "test.jpg", Name("path/to/test.jpg"))
+
+	if runtime.GOOS == "windows" {
+		assert.Equal(t, "path\\to", PathDir("path/to/test.jpg"))
+	} else {
+		assert.Equal(t, "path/to", PathDir("path/to/test.jpg"))
+	}
+}
+
+func TestPathExists(t *testing.T) {
+	assert.False(t, IsDir("/not-exist"))
+	assert.False(t, IsDirExists("/not-exist"))
+	assert.True(t, IsFile("testdata/test.jpg"))
+	assert.True(t, IsFile("testdata/test.jpg"))
+}
+
+func TestIsFile(t *testing.T) {
+	assert.False(t, FileExists(""))
+	assert.False(t, IsFile(""))
+	assert.False(t, IsFile("/not-exist"))
+	assert.False(t, FileExists("/not-exist"))
+	assert.True(t, IsFile("testdata/test.jpg"))
+	assert.True(t, FileExist("testdata/test.jpg"))
+}
+
+func TestIsDir(t *testing.T) {
+	assert.False(t, IsDir(""))
+	assert.False(t, DirExist(""))
+	assert.False(t, IsDir("/not-exist"))
+	assert.True(t, IsDir("testdata"))
+	assert.True(t, DirExist("testdata"))
+}
+
+func TestIsAbsPath(t *testing.T) {
+	assert.True(t, IsAbsPath("/data/some.txt"))
+
+	assert.NoError(t, DeleteIfFileExist("/not-exist"))
+}
+
+func TestMkdir(t *testing.T) {
+	// TODO windows will error
+	if IsWin() {
+		return
+	}
+
+	err := os.Chmod("./testdata", os.ModePerm)
+
+	if assert.NoError(t, err) {
+		assert.NoError(t, Mkdir("./testdata/sub/sub21", os.ModePerm))
+		assert.NoError(t, Mkdir("./testdata/sub/sub22", 0666))
+		assert.NoError(t, Mkdir("./testdata/sub/sub23/sub31", 0777)) // 066X will error
+
+		assert.NoError(t, os.RemoveAll("./testdata/sub"))
+	}
+}
+
+func TestCreateFile(t *testing.T) {
+	// TODO windows will error
+	// if envutil.IsWin() {
+	// 	return
+	// }
+
+	file, err := CreateFile("./testdata/test.txt", 0664, 0666)
+	if assert.NoError(t, err) {
+		assert.Equal(t, "./testdata/test.txt", file.Name())
+		assert.NoError(t, file.Close())
+		assert.NoError(t, os.Remove(file.Name()))
+	}
+
+	file, err = CreateFile("./testdata/sub/test.txt", 0664, 0777)
+	if assert.NoError(t, err) {
+		assert.Equal(t, "./testdata/sub/test.txt", file.Name())
+		assert.NoError(t, file.Close())
+		assert.NoError(t, os.RemoveAll("./testdata/sub"))
+	}
+
+	file, err = CreateFile("./testdata/sub/sub2/test.txt", 0664, 0777)
+	if assert.NoError(t, err) {
+		assert.Equal(t, "./testdata/sub/sub2/test.txt", file.Name())
+		assert.NoError(t, file.Close())
+		assert.NoError(t, os.RemoveAll("./testdata/sub"))
+	}
+}
+
+func TestQuickOpenFile(t *testing.T) {
+	fname := "./testdata/quick-open-file.txt"
+	file, err := QuickOpenFile(fname)
+	if assert.NoError(t, err) {
+		assert.Equal(t, fname, file.Name())
+		assert.NoError(t, file.Close())
+		assert.NoError(t, os.Remove(file.Name()))
+	}
 }

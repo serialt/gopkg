@@ -1,11 +1,8 @@
 package gopkg
 
 import (
-	"fmt"
 	"os"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestEnvCommon_Get(t *testing.T) {
@@ -98,27 +95,3 @@ const (
 	TestEnvValue        = "1"
 	DefaultTestEnvValue = "1"
 )
-
-func TestGetenv(t *testing.T) {
-	testutil.MockEnvValues(map[string]string{
-		TestEnvName: TestEnvValue,
-	}, func() {
-		envValue := Getenv(TestEnvName)
-		assert.Equal(t, TestEnvValue, envValue, "env value not equals")
-		envValue = Getenv(TestNoEnvName, DefaultTestEnvValue)
-		assert.Equal(t, DefaultTestEnvValue, envValue, "env value not default")
-	})
-}
-
-func TestEnviron(t *testing.T) {
-	testutil.MockOsEnv(map[string]string{
-		TestEnvName: TestEnvValue,
-	}, func() {
-		envValue := Getenv("not_exist")
-		assert.Equal(t, "", envValue)
-
-		fmt.Println("os.Environ:", os.Environ())
-		fmt.Println("new Environ:", Environ())
-		assert.Contains(t, Environ(), TestEnvName)
-	})
-}

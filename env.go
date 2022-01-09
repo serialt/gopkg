@@ -2,6 +2,7 @@ package gopkg
 
 import (
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 )
@@ -125,3 +126,28 @@ func Environ() map[string]string {
 	}
 	return envMap
 }
+
+// IsWin system. linux windows darwin
+func IsWin() bool {
+	return runtime.GOOS == "windows"
+}
+
+// IsWindows system. alias of IsWin
+func IsWindows() bool {
+	return runtime.GOOS == "windows"
+}
+
+// IsMac system
+func IsMac() bool {
+	return runtime.GOOS == "darwin"
+}
+
+// IsLinux system
+func IsLinux() bool {
+	return runtime.GOOS == "linux"
+}
+
+// // IsMSys msys(MINGW64) env. alias of the sysutil.IsMSys()
+// func IsMSys() bool {
+// 	return sysutil.IsMSys()
+// }
