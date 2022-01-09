@@ -8,6 +8,7 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -48,6 +49,15 @@ func IsDirExists(path string) bool {
 		return fi.IsDir()
 	}
 
+}
+
+// Mode get file mode
+func Mode(path string) os.FileMode {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return 0755
+	}
+	return fileInfo.Mode()
 }
 
 // CreateDir 创建目录
@@ -217,6 +227,7 @@ func dirWindows() (string, error) {
 	return home, nil
 }
 
+// DeleteFile 删除文件或目录
 func DeleteFile(filePath string) error {
 	return os.RemoveAll(filePath)
 }
@@ -314,6 +325,12 @@ func FileParentPath(filePath string) string {
 	return filePath[0:strings.LastIndex(filePath, "/")]
 }
 
+// WriteStringToFile write string to file
+func WriteStringToFile(content, path string, mode os.FileMode) (err error) {
+	bytes := []byte(content)
+	return ioutil.WriteFile(path, bytes, mode)
+}
+
 // FileAppend 追加内容到文件中
 //
 // filePath 文件地址
@@ -359,6 +376,90 @@ func FileAppend(filePath string, data []byte, force bool) (int, error) {
 		return 0, err
 	}
 	return n, nil
+}
+
+// Filter file filter
+type Filter func(os.FileInfo) bool
+
+// GetDirListWithFilter get directory list with filter
+func GetDirListWithFilter(path string, filter Filter) ([]string, error) {
+	var dirList []string
+
+	paths, err := filepath.Glob(filepath.Join(path, "*"))
+
+	log.Printf("paths: %v", paths)
+
+	for _, value := range paths {
+		f, err := os.Stat(value)
+		if err != nil {
+			return dirList, err
+		}
+		if filter != nil && !filter(f) {
+			continue
+		}
+		if f.IsDir() {
+			dir := strings.Replace(value, path, "", 1)
+			if strings.HasPrefix(dir, "/") {
+				dir = strings.Replace(dir, "/", "", 1)
+			}
+			dirList = append(dirList, dir)
+		}
+	}
+
+	return dirList, err
+}
+
+// RecreateDir recreate dir
+func RecreateDir(dir string) error {
+	mode := Mode(dir)
+	_ = os.RemoveAll(dir)
+	return os.MkdirAll(dir, mode)
+}
+
+// GetFilepaths get all filepaths in a directory tree
+func GetFilepaths(dir string) ([]string, error) {
+	var paths []string
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			paths = append(paths, path)
+		}
+		return nil
+	})
+	return paths, err
+}
+
+// File template file
+type File struct {
+	Path    string
+	Content string
+}
+
+// GetFiles get files
+func GetFiles(dir string) ([]*File, error) {
+	var files []*File
+
+	paths, err := GetFilepaths(dir)
+	if err != nil {
+		return files, err
+	}
+
+	for _, path := range paths {
+		bytes, err := ioutil.ReadFile(path)
+		if err != nil {
+			return files, err
+		}
+		content := string(bytes)
+		file := &File{
+			Path:    path,
+			Content: content,
+		}
+		files = append(files, file)
+	}
+
+	return files, nil
 }
 
 // FileModify 修改文件中指定位置的内容
@@ -518,11 +619,6 @@ Redirect:
 		}
 	}
 	return os.Rename(src, dst)
-}
-
-// DeLFile 删除文件
-func DeLFile(filePath string) error {
-	return os.RemoveAll(filePath)
 }
 
 // TrimSpace 去除空格
