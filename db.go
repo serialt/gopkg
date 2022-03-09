@@ -12,13 +12,18 @@ import (
 )
 
 type Database struct {
-	Type     string
-	Addr     string
-	Port     string
-	DBName   string
-	Username string
-	Password string
+	Type            string
+	Addr            string
+	Port            string
+	DBName          string
+	Username        string
+	Password        string
+	MaxIdleConns    int
+	MaxOpenConns    int
+	ConnMaxLifetime time.Duration
 }
+
+var logSugar *zap.SugaredLogger
 
 func GetMysqlGormDB(mydb *Database) *gorm.DB {
 	var myGormDB *gorm.DB
@@ -39,8 +44,7 @@ func GetMysqlGormDB(mydb *Database) *gorm.DB {
 			SkipInitializeWithVersion: false, // 根据当前 MySQL 版本自动配置
 		}), &gorm.Config{Logger: GormLogger})
 		if err != nil {
-			// global.GINS_LOG.Info("grom open failed", zap.Error(err))
-			fmt.Printf("grom open failed: %v\n", err)
+			logSugar.Infof("grom open failed: %v\n", err)
 		} else {
 			break
 		}
@@ -63,8 +67,7 @@ func GetPostgreSQLGormDB(mydb *Database) *gorm.DB {
 			PreferSimpleProtocol: true, // disables implicit prepared statement usage,
 		}), &gorm.Config{Logger: GormLogger})
 		if err != nil {
-			fmt.Printf("gorm open failed: %v", err)
-			// global.GINS_LOG.Info("grom open failed", zap.Error(err))
+			logSugar.Infof("gorm open failed: %v\n", err)
 		} else {
 			break
 		}
@@ -76,10 +79,11 @@ func GetPostgreSQLGormDB(mydb *Database) *gorm.DB {
 var GormLogger zapgorm2.Logger
 
 // 创建mydb
-func (db *Database) NewDBConnect(zapLogger *zap.Logger) *gorm.DB {
+func (db *Database) NewDBConnect(zaplog *zap.Logger) *gorm.DB {
 	// 使用zap 接收gorm日志
-	GormLogger = zapgorm2.New(zapLogger)
+	GormLogger = zapgorm2.New(zaplog)
 	GormLogger.SetAsDefault()
+	logSugar = zaplog.Sugar()
 
 	var GormDB *gorm.DB
 	switch db.Type {
@@ -89,21 +93,39 @@ func (db *Database) NewDBConnect(zapLogger *zap.Logger) *gorm.DB {
 	// 	fmt.Println("使用的数据库是 sqlite")
 	case "mysql":
 		GormDB = GetMysqlGormDB(db)
-		fmt.Println("使用的数据库是 mysql")
+		logSugar.Info("使用的数据库是 mysql")
 	case "postgresql":
 		GormDB = GetPostgreSQLGormDB(db)
-		fmt.Println("使用的数据库是 postgresql")
+		logSugar.Info("使用的数据库是 postgresql")
 	default:
-		fmt.Println("The database is not supported, please choice [sqlite] or [mysql]")
+		logSugar.Info("The database is not supported, please choice [sqlite] or [mysql]")
 	}
-	// Gorm 使用database/sql 维护连接池
-	sqlDB, _ := GormDB.DB()
-	// 设置空闲连接池中连接的最大数量
-	sqlDB.SetConnMaxIdleTime(5)
-	// 设置打开数据库连接的最大数量
-	sqlDB.SetMaxOpenConns(1)
-	// 设置了连接可复用的最大时间
-	sqlDB.SetConnMaxLifetime(time.Hour)
+	if db.MaxOpenConns != 0 {
+
+		// Gorm 使用database/sql 维护连接池
+		sqlDB, _ := GormDB.DB()
+
+		// 设置空闲连接池中连接的最大数量
+		sqlDB.SetMaxIdleConns(db.MaxIdleConns)
+
+		// 设置打开数据库连接的最大数量
+		sqlDB.SetMaxOpenConns(db.MaxOpenConns)
+
+		// 设置了连接可复用的最大时间
+		sqlDB.SetConnMaxLifetime(db.ConnMaxLifetime)
+	} else {
+		sqlDB, _ := GormDB.DB()
+
+		// SetMaxIdleConns 设置空闲连接池中连接的最大数量
+		sqlDB.SetMaxIdleConns(10)
+
+		// SetMaxOpenConns 设置打开数据库连接的最大数量。
+		sqlDB.SetMaxOpenConns(100)
+
+		// SetConnMaxLifetime 设置了连接可复用的最大时间。
+		sqlDB.SetConnMaxLifetime(time.Hour)
+
+	}
 
 	return GormDB
 
