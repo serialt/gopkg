@@ -1,4 +1,4 @@
-package gopkg
+package sugar
 
 import (
 	"crypto/hmac"

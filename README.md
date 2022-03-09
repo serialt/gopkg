@@ -2,5 +2,5 @@
 
 ### 使用方法
 ```
-    go get -u  github.com/serialt/gopkg
+    go get -u  github.com/serialt/sugar
 ```

@@ -1,4 +1,4 @@
-package gopkg
+package sugar
 
 // Does slice contain string
 func Contains(slice []string, value string) bool {
