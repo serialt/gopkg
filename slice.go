@@ -33,7 +33,7 @@ func Subslice(sub, main []string) bool {
 	return true
 }
 
-// DiffSlice sub 是否在main里,放回sub里不在main里的元素，返回diff和bool
+// DiffSlice sub是否在main里,返回sub里不在main里的元素，返回diff和bool
 func DiffSlice(sub, main []string) ([]string, bool) {
 	var diff []string
 	if len(sub) > len(main) {
@@ -43,6 +43,9 @@ func DiffSlice(sub, main []string) ([]string, bool) {
 		if !Contains(main, s) {
 			diff = append(diff, s)
 		}
+	}
+	if len(diff) > 0 {
+		return diff, false
 	}
 	return diff, true
 }

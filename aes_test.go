@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"gotest.tools/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCryptoAES(t *testing.T) {
@@ -51,15 +51,18 @@ func TestCryptoAES(t *testing.T) {
 }
 
 func TestBase64(t *testing.T) {
-	data := []byte("Hello World")     // 待加密的数据
-	key := []byte("ABCDEFGHIJKLMNOP") // 加密的密钥
+	data := "Hello World"     // 待加密的数据
+	key := "ABCDEFGHIJKLMNOP" // 加密的密钥
 
-	gotBase := encodeBase64(data)
+	t.Log("---------------- GCMBase64模式 -----------------")
+	gotBase := encodeBase64([]byte(data))
 	got, _ := decodeBase64(gotBase)
-	assert.Equal(t, got, data)
+	assert.Equal(t, string(got), data)
 
-	encrypted, _ := AESEncryptGCMBase64String(string(data), string(key))
-	gotData, _ := AESDecryptGCMBase64String(encrypted, string(key))
-	assert.Equal(t, gotData, data)
+	encrypted, _ := AESEncryptGCMBase64String(data, key)
+	gotData, _ := AESDecryptGCMBase64String(encrypted, key)
+	t.Log("明文：", data)
+	t.Log("加解密的的明文:", gotData)
+	assert.Equal(t, data, gotData)
 
 }

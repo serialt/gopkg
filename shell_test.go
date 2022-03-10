@@ -3,6 +3,8 @@ package gopkg
 import (
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFindCommandPath(t *testing.T) {
@@ -36,4 +38,32 @@ func TestRunCMD(t *testing.T) {
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("expected: %v -- %T, got:%v -- %T", want, want, got, got)
 	}
+}
+
+func TestUserDir(t *testing.T) {
+	dir := UserHomeDir()
+	assert.NotEmpty(t, dir)
+
+	dir = UserDir("sub-path")
+	assert.Contains(t, dir, "/sub-path")
+
+	dir = UserCacheDir("my-logs")
+	assert.Contains(t, dir, ".cache/my-logs")
+
+	dir = UserConfigDir("my-conf")
+	assert.Contains(t, dir, ".config/my-conf")
+
+}
+
+func TestWorkdir(t *testing.T) {
+	assert.NotEmpty(t, Workdir())
+}
+
+func TestLoginUser(t *testing.T) {
+	cu := LoginUser()
+	assert.NotEmpty(t, cu)
+
+	fu := MustFindUser(cu.Username)
+	assert.NotEmpty(t, fu)
+	assert.Equal(t, cu.Uid, fu.Uid)
 }

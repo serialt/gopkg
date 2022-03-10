@@ -2,6 +2,7 @@ package gopkg
 
 import (
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 )
@@ -108,3 +109,45 @@ func EnvGetFloat64D(envName string, defaultValue float64) float64 {
 func EnvGetBool(envName string) bool {
 	return strings.EqualFold(os.Getenv(envName), "true")
 }
+
+// Environ like os.Environ, but will returns key-value map[string]string data.
+func Environ() map[string]string {
+	envList := os.Environ()
+	envMap := make(map[string]string, len(envList))
+
+	for _, str := range envList {
+		nodes := strings.SplitN(str, "=", 2)
+
+		if len(nodes) < 2 {
+			envMap[nodes[0]] = ""
+		} else {
+			envMap[nodes[0]] = nodes[1]
+		}
+	}
+	return envMap
+}
+
+// IsWin system. linux windows darwin
+func IsWin() bool {
+	return runtime.GOOS == "windows"
+}
+
+// IsWindows system. alias of IsWin
+func IsWindows() bool {
+	return runtime.GOOS == "windows"
+}
+
+// IsMac system
+func IsMac() bool {
+	return runtime.GOOS == "darwin"
+}
+
+// IsLinux system
+func IsLinux() bool {
+	return runtime.GOOS == "linux"
+}
+
+// // IsMSys msys(MINGW64) env. alias of the sysutil.IsMSys()
+// func IsMSys() bool {
+// 	return sysutil.IsMSys()
+// }

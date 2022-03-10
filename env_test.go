@@ -88,3 +88,10 @@ func TestEnvCommon_GetBool(t *testing.T) {
 	_ = os.Setenv("HELLO", "WORLD")
 	t.Log("HELLO =", EnvGetBool("HELLO"))
 }
+
+const (
+	TestEnvName         = "TEST_GOUTIL_ENV"
+	TestNoEnvName       = "TEST_GOUTIL_NO_ENV"
+	TestEnvValue        = "1"
+	DefaultTestEnvValue = "1"
+)
