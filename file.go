@@ -166,7 +166,7 @@ var cacheLock sync.RWMutex
 //
 // This uses an OS-specific method for discovering the home directory.
 // An error is returned if a home directory cannot be detected.
-func Dir() (string, error) {
+func HomeDir() (string, error) {
 	if !DisableCache {
 		cacheLock.RLock()
 		cached := homedirCache
@@ -211,7 +211,7 @@ func Expand(path string) (string, error) {
 		return "", errors.New("cannot expand user-specific home dir")
 	}
 
-	dir, err := Dir()
+	dir, err := HomeDir()
 	if err != nil {
 		return "", err
 	}
@@ -596,7 +596,7 @@ func FileModify(filePath string, offset int64, data []byte, force bool) (int, er
 	return n, nil
 }
 
-// FileLoopDirs 遍历文件夹下的所有子文件夹
+// FileLoopDirs 遍历目录下的所有子目录，即返回pathname下面的所有目录，目录为绝对路径
 func FileLoopDirs(pathname string) ([]string, error) {
 	var s []string
 	rd, err := ioutil.ReadDir(pathname)
@@ -612,7 +612,7 @@ func FileLoopDirs(pathname string) ([]string, error) {
 	return s, nil
 }
 
-// FileLoopOneDirs 遍历文件夹下一层的所有子文件夹
+// FileLoopOneDirs 遍历目录下的所有子目录，即返回pathname下面的所有目录，目录为相对路径
 func FileLoopOneDirs(pathname string) ([]string, error) {
 	var s []string
 	rd, err := ioutil.ReadDir(pathname)
@@ -627,7 +627,7 @@ func FileLoopOneDirs(pathname string) ([]string, error) {
 	return s, nil
 }
 
-// FileLoopFiles 遍历文件夹及子文件夹下的所有文件
+// FileLoopFiles 遍历文件夹及子文件夹下的所有文件，即返回pathname目录下所有的文件，文件名为绝对路径
 func FileLoopFiles(pathname string) ([]string, error) {
 	var s []string
 	rd, err := ioutil.ReadDir(pathname)
@@ -650,7 +650,7 @@ func FileLoopFiles(pathname string) ([]string, error) {
 	return s, nil
 }
 
-// FileLoopFileNames 遍历文件夹及子文件夹下的所有文件名
+// FileLoopFileNames 遍历文件夹及子文件夹下的所有文件名，即返回pathname目录下所有的文件，文件名为相对路径
 func FileLoopFileNames(pathname string) ([]string, error) {
 	var s []string
 	rd, err := ioutil.ReadDir(pathname)
