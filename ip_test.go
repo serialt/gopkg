@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const checkMark = " OK! "
@@ -117,4 +119,12 @@ func TestIPCommon_Get_XForwardedForIP6(t *testing.T) {
 	} else {
 		t.Errorf("\t\tShould receive a \"%d\" status. %v %v", statusCode, ballotX, resp.StatusCode)
 	}
+}
+
+func TestGetPubIP(t *testing.T) {
+
+	want := ""
+	got, all := GetPubIP()
+	assert.NotEqual(t, want, got)
+	t.Logf("\t\tget public ip: %v, all: %v ", got, all)
 }
