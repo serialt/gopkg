@@ -9,12 +9,13 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/mattn/go-isatty"
 	"github.com/mitchellh/go-homedir"
 )
 
-// 获取命令的路径
+// FindCommandPath 获取命令的路径
 func FindCommandPath(str string) (string, error) {
 	return exec.LookPath(str)
 
@@ -29,9 +30,12 @@ func HasExecutable(binName string) bool {
 	return err == nil
 }
 
-// 获取标准正确输出
-func RunCmd(str string) (string, error) {
+// RunCmd 获取标准正确输出
+func RunCmd(str string, workDir ...string) (string, error) {
 	cmd := exec.Command("/bin/bash", "-c", str)
+	if len(workDir) > 0 {
+		cmd.Dir = workDir[0]
+	}
 	result, err := cmd.Output()
 	if err != nil {
 		return "", err
@@ -40,9 +44,12 @@ func RunCmd(str string) (string, error) {
 
 }
 
-// 标准正确错误输出到标准正确输出
-func RunCMD(str string) (string, error) {
+// RunCMD 标准正确错误输出到标准正确输出
+func RunCMD(str string, workDir ...string) (string, error) {
 	cmd := exec.Command("/bin/bash", "-c", str)
+	if len(workDir) > 0 {
+		cmd.Dir = workDir[0]
+	}
 	result, err := cmd.CombinedOutput()
 	if err != nil {
 		return string(result), err
@@ -50,7 +57,7 @@ func RunCMD(str string) (string, error) {
 	return string(result), nil
 }
 
-// ExecCmd an command and return output.
+// ExecCmd an command and return output. 指定目录执行shell
 // Usage:
 // 	ExecCmd("ls", []string{"-al"})
 func ExecCmd(binName string, args []string, workDir ...string) (string, error) {
@@ -102,7 +109,36 @@ func ShellExec(cmdLine string, shells ...string) (string, error) {
 // 	return ExecLine(cmdLine, workDir...)
 // }
 
-// MustFindUser must find an system user by name
+// RunCommandWithTimeout 带超时控制的执行shell命令
+func RunCommandWithTimeout(timeout int, workDir string, command string, args ...string) (stdout, stderr string, isKilled bool) {
+	var stdoutBuf, stderrBuf bytes.Buffer
+	cmd := exec.Command(command, args...)
+	if len(workDir) > 0 {
+		cmd.Dir = workDir
+	}
+	cmd.Stdout = &stdoutBuf
+	cmd.Stderr = &stderrBuf
+	cmd.Start()
+	done := make(chan error)
+	go func() {
+		done <- cmd.Wait()
+	}()
+	after := time.After(time.Duration(timeout) * time.Millisecond)
+	select {
+	case <-after:
+		cmd.Process.Signal(syscall.SIGINT)
+		time.Sleep(10 * time.Millisecond)
+		cmd.Process.Kill()
+		isKilled = true
+	case <-done:
+		isKilled = false
+	}
+	stdout = string(bytes.TrimSpace(stdoutBuf.Bytes())) // Remove \n
+	stderr = string(bytes.TrimSpace(stderrBuf.Bytes())) // Remove \n
+	return
+}
+
+// MustFindUser must find an system user by name.
 func MustFindUser(uname string) *user.User {
 	u, err := user.Lookup(uname)
 	if err != nil {
@@ -111,12 +147,12 @@ func MustFindUser(uname string) *user.User {
 	return u
 }
 
-// LoginUser must get current user
+// LoginUser get current user.
 func LoginUser() *user.User {
 	return CurrentUser()
 }
 
-// CurrentUser must get current user
+// CurrentUser get current user.
 func CurrentUser() *user.User {
 	// check $HOME/.terminfo
 	u, err := user.Current()
@@ -126,20 +162,16 @@ func CurrentUser() *user.User {
 	return u
 }
 
-// UserHomeDir is alias of os.UserHomeDir, but ignore error
+// UserHomeDir get user home dir path.
 func UserHomeDir() string {
-	dir, _ := os.UserHomeDir()
+	dir, _ := homedir.Dir()
 	return dir
 }
 
-// UHomeDir get user home dir path.
+// UHomeDir get Currentuser home dir path.
 func UHomeDir() string {
-	// check $HOME/.terminfo
-	u, err := user.Current()
-	if err != nil {
-		return ""
-	}
-	return u.HomeDir
+	dir, _ := homedir.Dir()
+	return dir
 }
 
 // HomeDir get user home dir path.
