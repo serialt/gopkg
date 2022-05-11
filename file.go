@@ -11,16 +11,12 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"reflect"
 	"regexp"
-	"runtime"
 	"sort"
-	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mitchellh/go-homedir"
@@ -32,12 +28,6 @@ var (
 	DefaultFilePerm os.FileMode = 0665
 
 	DefaultFileFlags = os.O_CREATE | os.O_WRONLY | os.O_APPEND
-)
-
-// alias methods
-var (
-	DirExist  = IsDir
-	FileExist = IsFile
 )
 
 // 当前项目根目录
@@ -59,22 +49,12 @@ func GetRootPath() string {
 	return API_ROOT
 }
 
-// 判断文件目录否存在
-func IsDirExists(path string) bool {
-	if path == "" {
-		return false
-	}
-	fi, err := os.Stat(path)
-
-	if err != nil {
-		return os.IsExist(err)
-	} else {
-		return fi.IsDir()
-	}
-
+// DirExist 判断目录否存在
+func DirExist(path string) bool {
+	return IsDir(path)
 }
 
-// 判断文件目录否存在
+// IsDir 判断目录否存在
 func IsDir(path string) bool {
 	if path == "" {
 		return false
@@ -98,47 +78,38 @@ func Mode(path string) os.FileMode {
 	return fileInfo.Mode()
 }
 
-// CreateDir 创建目录
-func CreateDir(dirs ...string) (err error) {
-	for _, v := range dirs {
-		exist := IsDirExists(v)
-
-		if !exist {
-
-			if err := os.MkdirAll(v, os.ModePerm); err != nil {
-				return err
-			}
-		}
-	}
-	return err
-}
-
-// FileExt get filename ext. alias of path.Ext()
+// Suffix get filename ext. alias of path.Ext() 获取文件的后缀, main.go 获取的后缀是.go
 func FileExt(fpath string) string {
-	return path.Ext(fpath)
+	return filepath.Ext(fpath)
 }
 
-// Suffix get filename ext. alias of path.Ext()
+// Suffix get filename ext. alias of path.Ext() 获取文件的后缀, main.go 获取的后缀是.go
 func Suffix(fpath string) string {
-	return path.Ext(fpath)
+	return filepath.Ext(fpath)
 }
 
-// 创建文件
-func MkdirFile(path string) error {
+// Prefix 获取文件名前缀, /tmp/main.go 获取的文件前缀是main
+func Prefix(fpath string) string {
+	return strings.TrimSuffix(filepath.Base(fpath), filepath.Ext(fpath))
+}
 
-	err := os.Mkdir(path, os.ModePerm) //在当前目录下生成md目录
+// CreateFile 创建空文件
+func CreateEmptyFile(path string) error {
+
+	f, err := os.Create(path)
 	if err != nil {
 		return err
 	}
+	f.Close()
 	return nil
 }
 
-// FileExists reports whether the named file or directory exists.
+// FileExists reports whether the named file or directory exists. 文件是否存在
 func FileExists(path string) bool {
 	return IsFile(path)
 }
 
-// IsFile reports whether the named file or directory exists.
+// IsFile reports whether the named file or directory exists. 是否是文件
 func IsFile(path string) bool {
 	if path == "" {
 		return false
@@ -150,151 +121,9 @@ func IsFile(path string) bool {
 	return false
 }
 
-// IsAbsPath is abs path.
+// IsAbsPath is abs path. 是否是绝对路径
 func IsAbsPath(aPath string) bool {
 	return path.IsAbs(aPath)
-}
-
-// DisableCache will disable caching of the home directory. Caching is enabled
-// by default.
-var DisableCache bool
-
-var homedirCache string
-var cacheLock sync.RWMutex
-
-// Dir returns the home directory for the executing user.
-//
-// This uses an OS-specific method for discovering the home directory.
-// An error is returned if a home directory cannot be detected.
-func HomeDir() (string, error) {
-	if !DisableCache {
-		cacheLock.RLock()
-		cached := homedirCache
-		cacheLock.RUnlock()
-		if cached != "" {
-			return cached, nil
-		}
-	}
-
-	cacheLock.Lock()
-	defer cacheLock.Unlock()
-
-	var result string
-	var err error
-	if runtime.GOOS == "windows" {
-		result, err = dirWindows()
-	} else {
-		// Unix-like system, so just assume Unix
-		result, err = dirUnix()
-	}
-
-	if err != nil {
-		return "", err
-	}
-	homedirCache = result
-	return result, nil
-}
-
-// Expand expands the path to include the home directory if the path
-// is prefixed with `~`. If it isn't prefixed with `~`, the path is
-// returned as-is.
-func Expand(path string) (string, error) {
-	if len(path) == 0 {
-		return path, nil
-	}
-
-	if path[0] != '~' {
-		return path, nil
-	}
-
-	if len(path) > 1 && path[1] != '/' && path[1] != '\\' {
-		return "", errors.New("cannot expand user-specific home dir")
-	}
-
-	dir, err := HomeDir()
-	if err != nil {
-		return "", err
-	}
-
-	return filepath.Join(dir, path[1:]), nil
-}
-
-func dirUnix() (string, error) {
-	homeEnv := "HOME"
-	if runtime.GOOS == "plan9" {
-		// On plan9, env vars are lowercase.
-		homeEnv = "home"
-	}
-
-	// First prefer the HOME environmental variable
-	if home := os.Getenv(homeEnv); home != "" {
-		return home, nil
-	}
-
-	var stdout bytes.Buffer
-
-	// If that fails, try OS specific commands
-	if runtime.GOOS == "darwin" {
-		cmd := exec.Command("sh", "-c", `dscl -q . -read /Users/"$(whoami)" NFSHomeDirectory | sed 's/^[^ ]*: //'`)
-		cmd.Stdout = &stdout
-		if err := cmd.Run(); err == nil {
-			result := strings.TrimSpace(stdout.String())
-			if result != "" {
-				return result, nil
-			}
-		}
-	} else {
-		cmd := exec.Command("getent", "passwd", strconv.Itoa(os.Getuid()))
-		cmd.Stdout = &stdout
-		if err := cmd.Run(); err != nil {
-			// If the error is ErrNotFound, we ignore it. Otherwise, return it.
-			if err != exec.ErrNotFound {
-				return "", err
-			}
-		} else {
-			if passwd := strings.TrimSpace(stdout.String()); passwd != "" {
-				// username:password:uid:gid:gecos:home:shell
-				passwdParts := strings.SplitN(passwd, ":", 7)
-				if len(passwdParts) > 5 {
-					return passwdParts[5], nil
-				}
-			}
-		}
-	}
-
-	// If all else fails, try the shell
-	stdout.Reset()
-	cmd := exec.Command("sh", "-c", "cd && pwd")
-	cmd.Stdout = &stdout
-	if err := cmd.Run(); err != nil {
-		return "", err
-	}
-
-	result := strings.TrimSpace(stdout.String())
-	if result == "" {
-		return "", errors.New("blank output when reading home directory")
-	}
-
-	return result, nil
-}
-
-func dirWindows() (string, error) {
-	// First prefer the HOME environmental variable
-	if home := os.Getenv("HOME"); home != "" {
-		return home, nil
-	}
-
-	drive := os.Getenv("HOMEDRIVE")
-	path := os.Getenv("HOMEPATH")
-	home := drive + path
-	if drive == "" || path == "" {
-		home = os.Getenv("USERPROFILE")
-	}
-	if home == "" {
-		return "", errors.New("HOMEDRIVE, HOMEPATH, and USERPROFILE are blank")
-	}
-
-	return home, nil
 }
 
 // Dir get dir path, without last name. 获取路径的目录
@@ -1676,6 +1505,12 @@ func OSTempDir(pattern string) (string, error) {
 // 	fsutil.TempDir("", "example.*.txt")
 func TempDir(dir, pattern string) (string, error) {
 	return ioutil.TempDir(dir, pattern)
+}
+
+// UserHomePath 用户的家目录
+func UserHomePath() string {
+	myHomeDir, _ := homedir.Dir()
+	return myHomeDir
 }
 
 // ExpandPath will parse `~` as user home dir path.

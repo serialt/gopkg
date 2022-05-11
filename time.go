@@ -22,14 +22,14 @@ func Timestamp2String(timestampSec, timestampNSec int64, format string, zone *ti
 	}
 }
 
-// 返回当前时间
+// GetDate 返回当前时间
 func GetDate() string {
 	timestamp := time.Now().Unix()
 	tm := time.Unix(timestamp, 0)
 	return tm.Format("2006-01-02 03:04:05")
 }
 
-// 获取当前系统环境
+// GetRunTime 获取当前系统环境
 func GetRunTime() string {
 	//获取系统环境变量
 	RUN_TIME := os.Getenv("RUN_TIME")

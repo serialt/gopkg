@@ -23,7 +23,7 @@ func TestIndexSlice(t *testing.T) {
 func TestSubslice(t *testing.T) {
 	data := []string{"hello", "world", "github"}
 	subslice := []string{"world", "github"}
-	ok := Subslice(subslice, data)
+	ok := IsSubSlice(subslice, data)
 	assert.True(t, ok)
 }
 

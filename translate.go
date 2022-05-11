@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// TranslateCh2En 谷歌翻译中文转英文
 func TranslateCh2En(text string) (string, error) {
 	url := fmt.Sprintf("https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-cn&tl=en&dt=t&q=%s", url.QueryEscape(text))
 	resp, err := http.Get(url)
@@ -32,6 +33,7 @@ func TranslateCh2En(text string) (string, error) {
 	return ps[0], nil
 }
 
+// TranslateEn2Ch 谷歌翻译英文转中文
 func TranslateEn2Ch(text string) (string, error) {
 	url := fmt.Sprintf("https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-cn&dt=t&q=%s", url.QueryEscape(text))
 	resp, err := http.Get(url)

@@ -97,6 +97,7 @@ func GenerateRSAKey(bits int) (priKey, pubKey []byte, err error) {
 	return priKey, pubKey, nil
 }
 
+// GenerateRSAKeyInFile 创建公私钥并写入文件
 func GenerateRSAKeyInFile(bits int, filePath string) (err error) {
 	//GenerateKey函数使用随机数据生成器random生成一对具有指定字位数的RSA密钥
 	//Reader是一个全局、共享的密码用强随机数生成器
@@ -189,6 +190,7 @@ func GenerateRSAKeyWithPwd(passwd string, bits int) (priKey, pubKey string, err 
 	return priKey, pubKey, nil
 }
 
+// RSAEncrypt
 func RSAEncrypt(plainText, key []byte) (cryptText []byte, err error) {
 	block, _ := pem.Decode(key)
 	defer func() {

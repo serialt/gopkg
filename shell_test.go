@@ -13,8 +13,16 @@ func TestFindCommandPath(t *testing.T) {
 	if err != nil {
 		t.Errorf("cat find cmd path %v", err)
 	}
-	if !reflect.DeepEqual(want, got) {
-		t.Errorf("expected:%v, got:%v", want, got)
+	if IsLinux() {
+		if !reflect.DeepEqual(want, got) {
+			t.Errorf("expected:%v, got:%v", want, got)
+		}
+	}
+	if IsMac() {
+		got = "/bin/cat"
+		if !reflect.DeepEqual(want, got) {
+			t.Errorf("expected:%v, got:%v", want, got)
+		}
 	}
 }
 

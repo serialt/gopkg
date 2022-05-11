@@ -70,7 +70,6 @@ func StringRandSeq16() string {
 }
 
 // StringAllLetter 判断字符串是否只由字母组成
-// str 为待判断的字符串
 func StringIsLetter(str string) (bool, error) {
 	return regexp.MatchString(`^[A-Za-z]+$`, str)
 }
@@ -122,10 +121,6 @@ func StringSingleSpace(res string) string {
 }
 
 // StringPrefixSupplementZero 当字符串长度不满足时，将字符串前几位补充0
-//
-// str 字符串内容
-//
-// offset 字符串期望的长度
 func StringPrefixSupplementZero(str string, offset int) string {
 	backZero := offset - len(str)
 	if backZero <= 0 {
