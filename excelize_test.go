@@ -8,8 +8,7 @@ import (
 )
 
 func TestPasreList2Excel(t *testing.T) {
-	// rootPath := GetRootPath()
-	rootPath := "/Users/serialt/Desktop/flkj/github/gopkg/tmp/"
+	rootPath := GetRootPath()
 	var data [][]string
 
 	header := []string{"ID", "name", "email"}
@@ -22,7 +21,7 @@ func TestPasreList2Excel(t *testing.T) {
 }
 
 func TestPasreExcel2List(t *testing.T) {
-	filepath := fmt.Sprintf("%s/excel.xlsx", "/Users/serialt/Desktop/flkj/github/gopkg/tmp/")
+	filepath := fmt.Sprintf("%s/excel.xlsx", GetRootPath())
 	data, err := PasreExcel2List(filepath, []string{"ID", "name", "email"}, false)
 	t.Logf("读取的数据: %v", data)
 	assert.Empty(t, err)
