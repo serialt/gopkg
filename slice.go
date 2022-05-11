@@ -1,18 +1,3 @@
-/*
- * @Description   : IMAU of Serialt
- * @Author        : serialt
- * @Email         : serialt@qq.com
- * @Github        : https://github.com/serialt
- * @Created Time  : 2022-04-17 23:22:12
- * @Last modified : 2022-05-11 23:37:43
- * @FilePath      : /gopkg/slice.go
- * @Other         :
- * @              :
- *
- *                 人和代码，有一个能跑就行
- *
- */
-
 package gopkg
 
 /**
