@@ -7,7 +7,7 @@ import (
 	"github.com/mozillazg/go-pinyin"
 )
 
-// Pinyin 汉字转拼音，当多音字时候只去第一个
+// Pinyin 汉字转拼音，当多音字时候取第一个
 func Pinyin(chinese string) string {
 	ss := fmt.Sprint(pinyin.LazyConvert(chinese, nil))
 	ss = strings.ReplaceAll(ss, "[", "")
