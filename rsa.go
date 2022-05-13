@@ -190,7 +190,7 @@ func GenerateRSAKeyWithPwd(passwd string, bits int) (priKey, pubKey string, err 
 	return priKey, pubKey, nil
 }
 
-// RSAEncrypt
+// RSAEncrypt rsa加密
 func RSAEncrypt(plainText, key []byte) (cryptText []byte, err error) {
 	block, _ := pem.Decode(key)
 	defer func() {
@@ -216,6 +216,7 @@ func RSAEncrypt(plainText, key []byte) (cryptText []byte, err error) {
 	return cipherText, nil
 }
 
+// RsaDecrypt rsa解密
 func RsaDecrypt(cryptText, key []byte) (plainText []byte, err error) {
 	block, _ := pem.Decode(key)
 
@@ -240,12 +241,6 @@ func RsaDecrypt(cryptText, key []byte) (plainText []byte, err error) {
 	return plainText, nil
 }
 
-/*
-	RSAEncryptOAEP
-	plainText: 明文
-	pubCipherKey： 公钥
-	oders：密码
-*/
 // RSAEncryptOAEP 公钥加密
 func RSAEncryptOAEP(plainText []byte, pubCipherKey []byte) (cipherText []byte, err error) {
 
@@ -269,15 +264,6 @@ func RSAEncryptOAEP(plainText []byte, pubCipherKey []byte) (cipherText []byte, e
 	return cipherText, nil
 
 }
-
-/*
-	RSA DecryptOAEP
-	cipherText: 密文
-	plainTextHash： 明文的hash
-	cipherKey：加密密钥
-	orders： 密码
-
-*/
 
 // RSADecryptOAEP 私钥解密
 func RSADecryptOAEP(cipherText, privCipherKey []byte) (plainText []byte, err error) {
@@ -304,7 +290,7 @@ func RSADecryptOAEP(cipherText, privCipherKey []byte) (plainText []byte, err err
 	return plainText, nil
 }
 
-// rsa 签名算法
+// RsaSignPKCS1v15 rsa签名
 func RsaSignPKCS1v15(msg, Key []byte) (cryptText []byte, err error) {
 	block, _ := pem.Decode(Key)
 	defer func() {
@@ -328,6 +314,7 @@ func RsaSignPKCS1v15(msg, Key []byte) (cryptText []byte, err error) {
 	return sign, nil
 }
 
+// RsaVerifySignPKCS1v15 rsa验证签名
 func RsaVerifySignPKCS1v15(msg []byte, sign []byte, Key []byte) bool {
 	block, _ := pem.Decode(Key)
 	defer func() {

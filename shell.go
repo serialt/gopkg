@@ -21,13 +21,9 @@ func FindCommandPath(str string) (string, error) {
 
 }
 
-// HasExecutable in the system
-//
-// Usage:
-// 	HasExecutable("bash")
-func HasExecutable(binName string) bool {
-	_, err := exec.LookPath(binName)
-	return err == nil
+// Where 获取命令的路径，FindCommandPath的别名
+func Where(str string) (string, error) {
+	return exec.LookPath(str)
 }
 
 // RunCmd 获取标准正确输出
@@ -138,22 +134,22 @@ func RunCommandWithTimeout(timeout int, workDir string, command string, args ...
 	return
 }
 
-// MustFindUser must find an system user by name.
-func MustFindUser(uname string) *user.User {
+// FindUser find an system user by name.
+func FindUser(uname string) (*user.User, error) {
 	u, err := user.Lookup(uname)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return u
+	return u, err
 }
 
-// LoginUser get current user.
-func LoginUser() *user.User {
-	return CurrentUser()
+// GetLoginUser get current user, alias of CurrentUser.
+func GetLoginUser() *user.User {
+	return GetCurrentUser()
 }
 
 // CurrentUser get current user.
-func CurrentUser() *user.User {
+func GetCurrentUser() *user.User {
 	// check $HOME/.terminfo
 	u, err := user.Current()
 	if err != nil {
@@ -168,13 +164,7 @@ func UserHomeDir() string {
 	return dir
 }
 
-// UHomeDir get Currentuser home dir path.
-func UHomeDir() string {
-	dir, _ := homedir.Dir()
-	return dir
-}
-
-// HomeDir get user home dir path.
+// HomeDir get user home dir path, alias .
 func HomeDir() string {
 	dir, _ := homedir.Dir()
 	return dir

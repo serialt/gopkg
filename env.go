@@ -127,7 +127,46 @@ func Environ() map[string]string {
 	return envMap
 }
 
-// IsWin system. linux windows darwin
+func IsAIX() bool {
+	return runtime.GOOS == "aix"
+}
+
+func IsAndroid() bool {
+	return runtime.GOOS == "android"
+}
+
+func IsMac() bool {
+	return runtime.GOOS == "darwin"
+}
+
+func IsDarwin() bool {
+	return runtime.GOOS == "darwin"
+}
+
+func IsFreeBSD() bool {
+	return runtime.GOOS == "freebsd"
+}
+
+func IsIOS() bool {
+	return runtime.GOARCH == "ios"
+}
+
+func IsLinux() bool {
+	return runtime.GOOS == "linux"
+}
+
+func IsNetBSD() bool {
+	return runtime.GOOS == "netbsd"
+}
+
+func IsOpenBSD() bool {
+	return runtime.GOOS == "openbsd"
+}
+
+func IsPlan9() bool {
+	return runtime.GOARCH == "plan9"
+}
+
 func IsWin() bool {
 	return runtime.GOOS == "windows"
 }
@@ -137,14 +176,20 @@ func IsWindows() bool {
 	return runtime.GOOS == "windows"
 }
 
-// IsMac system
-func IsMac() bool {
-	return runtime.GOOS == "darwin"
+func Is386() bool {
+	return runtime.GOARCH == "386"
 }
 
-// IsLinux system
-func IsLinux() bool {
-	return runtime.GOOS == "linux"
+func IsAMD64() bool {
+	return runtime.GOARCH == "amd64"
+}
+
+func IsARM64() bool {
+	return runtime.GOARCH == "arm64"
+}
+
+func IsRISCV64() bool {
+	return runtime.GOARCH == "riscv64"
 }
 
 // // IsMSys msys(MINGW64) env. alias of the sysutil.IsMSys()

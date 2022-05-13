@@ -150,24 +150,6 @@ func StringBuildSep(sep string, arrString ...string) string {
 	return strings.Join(arrString, sep)
 }
 
-// String2Timestamp 字符串转时间戳
-//
-// date 待转换时间字符串 如：2019/09/17 10:16:56
-//
-// format 时间字符串格式化类型 如：2006/01/02 15:04:05
-//
-// zone 时区 如：time.Local / time.UTC
-func String2Timestamp(date, format string, zone *time.Location) (int64, error) {
-	var (
-		theTime time.Time
-		err     error
-	)
-	if theTime, err = time.ParseInLocation(format, date, zone); nil != err {
-		return 0, err
-	}
-	return theTime.Unix(), nil
-}
-
 // FilterPrefix 根据前缀过滤slice
 func FilterPrefix(strs []string, s string) (r []string) {
 	for _, v := range strs {

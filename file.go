@@ -235,6 +235,35 @@ func FileParentPath(filePath string) string {
 	return filePath[0:strings.LastIndex(filePath, "/")]
 }
 
+// ReadFile 读文件
+func ReadFile(filename string) ([]byte, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	contentByte, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+	return contentByte, nil
+}
+
+// WriteFile 写文件
+func WriteFile(filename string, data []byte, perm os.FileMode) error {
+	f, err := os.OpenFile(filename, os.O_CREATE|os.O_RDWR|os.O_APPEND, perm)
+	if err != nil {
+		return err
+	}
+	if _, err := f.Write(data); err != nil {
+		return err
+	}
+	if err := f.Close(); err != nil {
+		return err
+	}
+	return nil
+}
+
 // WriteStringToFile write string to file
 func WriteStringToFile(content, path string, mode os.FileMode) (err error) {
 	bytes := []byte(content)

@@ -68,10 +68,10 @@ func TestWorkdir(t *testing.T) {
 }
 
 func TestLoginUser(t *testing.T) {
-	cu := LoginUser()
+	cu := GetLoginUser()
 	assert.NotEmpty(t, cu)
 
-	fu := MustFindUser(cu.Username)
+	fu, _ := FindUser(cu.Username)
 	assert.NotEmpty(t, fu)
 	assert.Equal(t, cu.Uid, fu.Uid)
 }
