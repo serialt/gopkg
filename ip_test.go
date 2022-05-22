@@ -2,6 +2,7 @@ package gopkg
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -127,4 +128,37 @@ func TestGetPubIP(t *testing.T) {
 	got, all := GetPubIP()
 	assert.NotEqual(t, want, got)
 	t.Logf("\t\tget public ip: %v, all: %v ", got, all)
+}
+
+func TestSubNetMaskToLen(t *testing.T) {
+	want24 := 24
+	got24, err := SubNetMaskToLen("255.255.255.0")
+	assert.Empty(t, err)
+	assert.Equal(t, want24, got24)
+
+	want16 := 16
+	got16, err := SubNetMaskToLen("255.255.0.0")
+	assert.Empty(t, err)
+	assert.Equal(t, want16, got16)
+}
+
+func TestLenToSubNetMask(t *testing.T) {
+	want8 := "255.0.0.0"
+	want32 := "255.255.255.255"
+	got32 := LenToSubNetMask(32)
+	assert.Equal(t, want32, got32)
+
+	got8 := LenToSubNetMask(8)
+	assert.Equal(t, want8, got8)
+}
+
+func TestIsPublicIPv4(t *testing.T) {
+	ip1 := net.ParseIP("8.8.8.8")
+	ip2 := net.ParseIP("119.29.29.29")
+	ip3 := net.ParseIP("10.10.10.5")
+	ip4 := net.ParseIP("127.0.0.1")
+	assert.True(t, IsPublicIPv4(ip1))
+	assert.True(t, IsPublicIPv4(ip2))
+	assert.False(t, IsPublicIPv4(ip3))
+	assert.False(t, IsPublicIPv4(ip4))
 }
