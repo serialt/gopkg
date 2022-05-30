@@ -55,8 +55,8 @@ func TestBase64(t *testing.T) {
 	key := "ABCDEFGHIJKLMNOP" // 加密的密钥
 
 	t.Log("---------------- GCMBase64模式 -----------------")
-	gotBase := encodeBase64([]byte(data))
-	got, _ := decodeBase64(gotBase)
+	gotBase := EncodeBase64([]byte(data))
+	got, _ := DecodeBase64(gotBase)
 	assert.Equal(t, string(got), data)
 
 	encrypted, _ := AESEncryptGCMBase64String(data, key)

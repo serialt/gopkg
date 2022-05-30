@@ -227,13 +227,13 @@ func AssertIV(iv []byte) {
 	}
 }
 
-// encodeBase64 base64编码
-func encodeBase64(src []byte) string {
+// EncodeBase64 base64编码
+func EncodeBase64(src []byte) string {
 	return base64.StdEncoding.EncodeToString(src)
 }
 
-// decodeBase64 base64解码
-func decodeBase64(src string) ([]byte, error) {
+// DecodeBase64 base64解码
+func DecodeBase64(src string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(src)
 }
 
@@ -290,7 +290,7 @@ func AESEncryptGCMBase64String(src, cipherKey string) (dst string, err error) {
 	if err != nil {
 		return
 	}
-	dst = encodeBase64(encryptResult)
+	dst = EncodeBase64(encryptResult)
 	return
 }
 
@@ -300,7 +300,7 @@ func AESDecryptGCMBase64String(src string, cipherKey string) (dst string, err er
 		encryptResult []byte
 		decryptResult []byte
 	)
-	encryptResult, err = decodeBase64(src)
+	encryptResult, err = DecodeBase64(src)
 	if err != nil {
 		return
 	}
