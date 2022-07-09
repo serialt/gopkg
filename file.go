@@ -142,7 +142,7 @@ func DeleteFile(filePath string) error {
 	return os.RemoveAll(filePath)
 }
 
-//创建文件夹,支持x/a/a  多层级
+// MkDir 创建文件夹,支持x/a/a  多层级
 func MkDir(path string) error {
 	_, err := os.Stat(path)
 	if err != nil {
