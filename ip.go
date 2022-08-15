@@ -2,6 +2,7 @@ package gopkg
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -139,4 +140,32 @@ func IsPublicIPv4(IP net.IP) bool {
 		}
 	}
 	return false
+}
+
+type ResponseIPIP struct {
+	Ret  string `json:"ret"`
+	Data struct {
+		IP       string   `json:"ip"`
+		Location []string `json:"location"`
+	} `json:"data"`
+}
+
+func GetMyIPLocation() (string, error) {
+	response := new(ResponseIPIP)
+	err := GetJSON("https://myip.ipip.net/json", 3, response)
+	if err != nil {
+		return "", err
+	}
+
+	locationData := response.Data.Location
+	if locationData[0] != "中国" {
+		return "", errors.New("非境内IP地址，放弃继续解析 :(")
+	}
+
+	province := locationData[1]
+	city := locationData[2]
+	if province == "北京" || province == "上海" || province == "重庆" || province == "天津" {
+		return province + "市", nil
+	}
+	return (province + "省" + city + "市"), nil
 }
